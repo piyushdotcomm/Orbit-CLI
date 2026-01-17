@@ -73,7 +73,8 @@ Orbit CLI is a comprehensive AI-powered tool that combines a command-line interf
 
    For the client, create a `.env.local` file in the `client` directory:
    ```env
-   NEXT_PUBLIC_BETTER_AUTH_URL="http://localhost:3001"
+   NEXT_PUBLIC_API_URL="http://localhost:3005"
+   NEXT_PUBLIC_CLIENT_URL="http://localhost:3000"
    ```
 
 5. **Set up the database**:
@@ -92,7 +93,7 @@ Orbit CLI is a comprehensive AI-powered tool that combines a command-line interf
    cd server
    npm run dev
    ```
-   The server will run on `http://localhost:3001`
+   The server will run on `http://localhost:3005`
 
 2. **Start the client** (in a new terminal):
    ```bash
