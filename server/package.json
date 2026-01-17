@@ -8,6 +8,7 @@
   },
   "scripts": {
     "dev": "nodemon src/index.js",
+    "start": "node src/index.js",
     "cli": "node src/cli/main.js"
   },
   "keywords": [],
