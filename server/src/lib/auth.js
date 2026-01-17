@@ -7,27 +7,38 @@ export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),
-  baseURL: "http://localhost:3005",
+
+  // IMPORTANT: must be dynamic for production
+  baseURL: process.env.BACKEND_URL || "http://localhost:3005",
   basePath: "/api/auth",
-  trustedOrigins: ["http://localhost:3000"],
+
+  // IMPORTANT: allow your deployed frontend
+  trustedOrigins: [
+    "http://localhost:3000",
+    "https://orbit-cli.vercel.app",
+  ],
+
+  // IMPORTANT: better-auth CORS (this fixes localhost issue)
+  cors: {
+    origin: true,
+    credentials: true,
+  },
+
   plugins: [
     deviceAuthorization({
-      // Optional configuration
-      expiresIn: "30m", // Device code expiration time
-      interval: "5s", // Minimum polling interval
-      
+      expiresIn: "30m",
+      interval: "5s",
     }),
   ],
+
   socialProviders: {
     github: {
       clientId: process.env.GITHUB_CLIENT_ID,
       clientSecret: process.env.GITHUB_CLIENT_SECRET,
-      
     },
-  
   },
 
-    logger: {
-        level: "debug"
-    }
+  logger: {
+    level: "debug",
+  },
 });
