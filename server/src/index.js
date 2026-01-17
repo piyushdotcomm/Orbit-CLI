@@ -1,3 +1,8 @@
+console.log(
+  "DEBUG DATABASE_URL:",
+  JSON.stringify(process.env.DATABASE_URL)
+);
+
 import express from "express";
 import { auth } from "./lib/auth.js";
 import { fromNodeHeaders, toNodeHandler } from "better-auth/node";
