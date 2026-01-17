@@ -1,19 +1,4 @@
-import pkg from "pg";
-const { Client } = pkg;
 
-(async () => {
-  try {
-    const client = new Client({
-      connectionString: process.env.DATABASE_URL,
-      ssl: { rejectUnauthorized: false },
-    });
-    await client.connect();
-    console.log("✅ DATABASE CONNECTION SUCCESS");
-    await client.end();
-  } catch (err) {
-    console.error("❌ DATABASE CONNECTION FAILED:", err.message);
-  }
-})();
 
 
 import express from "express";
