@@ -9,6 +9,7 @@
   "scripts": {
     "dev": "nodemon src/index.js",
     "start": "node src/index.js",
+    "build": "npx prisma generate",
     "cli": "node src/cli/main.js"
   },
   "keywords": [],

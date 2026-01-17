@@ -65,10 +65,24 @@ Orbit CLI is a comprehensive AI-powered tool that combines a command-line interf
 
    Create a `.env` file in the `server` directory with the following variables:
    ```env
-   DATABASE_URL="postgresql://username:password@localhost:5432/orbit_cli"
-   GOOGLE_GENERATIVE_AI_API_KEY="your-google-ai-api-key"
-   BETTER_AUTH_SECRET="your-secret-key"
-   BETTER_AUTH_URL="http://localhost:3001"
+   # AI Configuration
+   GOOGLE_GENERATIVE_AI_API_KEY=your_google_ai_api_key
+   ORBITAI_MODEL=gemini-1.5-pro
+
+   # GitHub OAuth
+   GITHUB_CLIENT_ID=your_github_client_id
+   GITHUB_CLIENT_SECRET=your_github_client_secret
+
+   # Database
+   DATABASE_URL=postgresql://username:password@localhost:5432/database_name
+
+   # Auth Configuration
+   BACKEND_URL=http://localhost:3005
+   TRUSTED_ORIGINS=http://localhost:3000
+   CORS_ORIGIN=true
+   CORS_CREDENTIALS=true
+   DEVICE_EXPIRES_IN=30m
+   DEVICE_INTERVAL=5s
    ```
 
    For the client, create a `.env.local` file in the `client` directory:
@@ -161,6 +175,59 @@ The application uses Prisma ORM with the following main models:
 
 - Client: `npm run lint` in the client directory
 - Server: ESLint configuration in server directory
+
+## Deployment
+
+### Render Deployment
+
+1. **Connect your repository** to Render
+2. **Set build settings**:
+   - Build Command: `npm install && npx prisma generate`
+   - Start Command: `npm run dev`
+3. **Add environment variables** in Render dashboard:
+   ```env
+   # AI Configuration
+   GOOGLE_GENERATIVE_AI_API_KEY=your_google_ai_api_key
+   ORBITAI_MODEL=gemini-1.5-pro
+
+   # GitHub OAuth
+   GITHUB_CLIENT_ID=your_github_client_id
+   GITHUB_CLIENT_SECRET=your_github_client_secret
+
+   # Database (Supabase or other PostgreSQL)
+   DATABASE_URL=postgresql://username:password@host:5432/database?sslmode=require&pgbouncer=true&connection_limit=1
+
+   # Auth Configuration
+   BACKEND_URL=https://your-render-app.onrender.com
+   TRUSTED_ORIGINS=https://your-frontend-domain.com
+   CORS_ORIGIN=true
+   CORS_CREDENTIALS=true
+   DEVICE_EXPIRES_IN=30m
+   DEVICE_INTERVAL=5s
+
+   # Render specific
+   NODE_ENV=production
+   ```
+4. **Database setup**:
+   - Use Supabase, Neon, or another PostgreSQL provider
+   - Ensure the database allows connections from Render's IP ranges
+   - Use connection pooling for better performance: `?pgbouncer=true&connection_limit=1`
+
+### Troubleshooting Database Issues
+
+If you encounter database connection errors on Render:
+
+1. **Check DATABASE_URL**: Ensure it's correct and accessible from external connections
+2. **SSL Mode**: Use `sslmode=require` for Supabase
+3. **Connection Pooling**: Add `pgbouncer=true&connection_limit=1` for serverless environments
+4. **Database Permissions**: Ensure your database user has proper permissions
+5. **Firewall**: Make sure your database allows connections from Render's servers
+
+### Common Render Issues
+
+- **Database Connection Timeout**: Use a database with better connection pooling
+- **Memory Limits**: Monitor your app's memory usage
+- **Cold Starts**: Expected for free tier, consider upgrading for better performance
 
 ## Contributing
 

@@ -8,10 +8,16 @@ import { deviceAuthorization } from "better-auth/plugins";
 console.log("📦 Imported auth dependencies successfully");
 
 console.log("🗄️ Setting up Prisma adapter...");
-const adapter = prismaAdapter(prisma, {
-  provider: "postgresql",
-});
-console.log("✅ Prisma adapter configured");
+let adapter;
+try {
+  adapter = prismaAdapter(prisma, {
+    provider: "postgresql",
+  });
+  console.log("✅ Prisma adapter configured");
+} catch (error) {
+  console.error("❌ Failed to configure Prisma adapter:", error);
+  throw error;
+}
 
 console.log("⚙️ Reading environment variables...");
 const backendUrl = process.env.BACKEND_URL || "http://localhost:3005";
@@ -39,36 +45,44 @@ const devicePlugin = deviceAuthorization({
 console.log("✅ Device authorization plugin configured");
 
 console.log("🚀 Creating Better Auth instance...");
-export const auth = betterAuth({
-  database: adapter,
+let auth;
+try {
+  auth = betterAuth({
+    database: adapter,
 
-  // IMPORTANT: must be dynamic for production
-  baseURL: backendUrl,
-  basePath: "/api/auth",
+    // IMPORTANT: must be dynamic for production
+    baseURL: backendUrl,
+    basePath: "/api/auth",
 
-  // IMPORTANT: allow your deployed frontend
-  trustedOrigins: trustedOrigins,
+    // IMPORTANT: allow your deployed frontend
+    trustedOrigins: trustedOrigins,
 
-  // IMPORTANT: better-auth CORS (this fixes localhost issue)
-  cors: {
-    origin: corsOrigin,
-    credentials: corsCredentials,
-  },
-
-  plugins: [devicePlugin],
-
-  socialProviders: {
-    github: {
-      clientId: process.env.GITHUB_CLIENT_ID,
-      clientSecret: process.env.GITHUB_CLIENT_SECRET,
+    // IMPORTANT: better-auth CORS (this fixes localhost issue)
+    cors: {
+      origin: corsOrigin,
+      credentials: corsCredentials,
     },
-  },
 
-  logger: {
-    level: "debug",
-  },
-});
+    plugins: [devicePlugin],
 
-console.log("🎉 Better Auth configuration completed successfully!");
+    socialProviders: {
+      github: {
+        clientId: process.env.GITHUB_CLIENT_ID,
+        clientSecret: process.env.GITHUB_CLIENT_SECRET,
+      },
+    },
+
+    logger: {
+      level: "debug",
+    },
+  });
+  console.log("🎉 Better Auth configuration completed successfully!");
+} catch (error) {
+  console.error("❌ Failed to create Better Auth instance:", error);
+  throw error;
+}
+
 console.log("🔑 GitHub OAuth configured:", process.env.GITHUB_CLIENT_ID ? "Yes" : "No");
 console.log("📊 Debug logging enabled");
+
+export { auth };

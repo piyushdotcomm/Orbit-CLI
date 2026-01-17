@@ -1,0 +1,32 @@
+services:
+  - type: web
+    name: orbit-cli-backend
+    runtime: node
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false # Set this manually in Render dashboard
+      - key: GOOGLE_GENERATIVE_AI_API_KEY
+        sync: false
+      - key: GITHUB_CLIENT_ID
+        sync: false
+      - key: GITHUB_CLIENT_SECRET
+        sync: false
+      - key: BACKEND_URL
+        fromService:
+          type: web
+          name: orbit-cli-backend
+          property: host
+      - key: TRUSTED_ORIGINS
+        sync: false
+      - key: CORS_ORIGIN
+        value: true
+      - key: CORS_CREDENTIALS
+        value: true
+      - key: DEVICE_EXPIRES_IN
+        value: 30m
+      - key: DEVICE_INTERVAL
+        value: 5s
