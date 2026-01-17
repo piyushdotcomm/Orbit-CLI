@@ -2,6 +2,8 @@
 import {auth} from "../lib/auth.js";
 import prisma from "../lib/db.js";
 
+console.log("💬 Initializing Chat Service...");
+
 export class ChatService {
   /**
    * Create a new conversation
@@ -10,14 +12,16 @@ export class ChatService {
    * @param {string} title - Optional conversation title
    */
   async createConversation( userId , mode = "chat", title = null) {
-  
-    return await prisma.conversation.create({
+    console.log(`📝 Creating new ${mode} conversation for user ${userId}...`);
+    const conversation = await prisma.conversation.create({
       data: {
         userId,
         mode,
         title: title || `New ${mode} conversation`,
       },
     });
+    console.log(`✅ Conversation created with ID: ${conversation.id}`);
+    return conversation;
   }
 
   /**
@@ -27,7 +31,10 @@ export class ChatService {
    * @param {string} mode - chat, tool, or agent
    */
   async getOrCreateConversation(userId, conversationId = null, mode = "chat") {
+    console.log(`🔍 Getting or creating conversation for user ${userId} (mode: ${mode})...`);
+
     if (conversationId) {
+      console.log(`📋 Looking for existing conversation with ID: ${conversationId}`);
       const conversation = await prisma.conversation.findFirst({
         where: {
           id: conversationId,
@@ -40,9 +47,14 @@ export class ChatService {
         },
       });
 
-      if (conversation) return conversation;
+      if (conversation) {
+        console.log(`✅ Found existing conversation with ${conversation.messages.length} messages`);
+        return conversation;
+      }
+      console.log("⚠️ Conversation not found, will create new one");
     }
 
+    console.log("🆕 Creating new conversation...");
     // Create new conversation if not found or not provided
     return await this.createConversation(userId, mode);
   }
@@ -54,18 +66,25 @@ export class ChatService {
    * @param {string|object} content - Message content
    */
   async addMessage(conversationId, role, content) {
+    console.log(`💬 Adding ${role} message to conversation ${conversationId}...`);
+
     // Convert content to JSON string if it's an object
     const contentStr = typeof content === "string" 
       ? content 
       : JSON.stringify(content);
 
-    return await prisma.message.create({
+    console.log(`📝 Message content type: ${typeof content === "string" ? "string" : "object"}`);
+
+    const message = await prisma.message.create({
       data: {
         conversationId,
         role,
         content: contentStr,
       },
     });
+
+    console.log(`✅ Message added with ID: ${message.id}`);
+    return message;
   }
 
   /**
@@ -73,16 +92,23 @@ export class ChatService {
    * @param {string} conversationId - Conversation ID
    */
   async getMessages(conversationId) {
+    console.log(`📜 Retrieving messages for conversation ${conversationId}...`);
+
     const messages = await prisma.message.findMany({
       where: { conversationId },
       orderBy: { createdAt: "asc" },
     });
 
+    console.log(`✅ Retrieved ${messages.length} messages`);
+
     // Parse JSON content back to objects if needed
-    return messages.map((msg) => ({
+    const parsedMessages = messages.map((msg) => ({
       ...msg,
       content: this.parseContent(msg.content),
     }));
+
+    console.log("🔄 Message content parsing completed");
+    return parsedMessages;
   }
 
   /**
@@ -90,7 +116,9 @@ export class ChatService {
    * @param {string} userId - User ID
    */
   async getUserConversations(userId) {
-    return await prisma.conversation.findMany({
+    console.log(`📂 Retrieving conversations for user ${userId}...`);
+
+    const conversations = await prisma.conversation.findMany({
       where: { userId },
       orderBy: { updatedAt: "desc" },
       include: {
@@ -100,6 +128,9 @@ export class ChatService {
         },
       },
     });
+
+    console.log(`✅ Retrieved ${conversations.length} conversations`);
+    return conversations;
   }
 
   /**
@@ -108,12 +139,17 @@ export class ChatService {
    * @param {string} userId - User ID (for security)
    */
   async deleteConversation(conversationId, userId) {
-    return await prisma.conversation.deleteMany({
+    console.log(`🗑️ Deleting conversation ${conversationId} for user ${userId}...`);
+
+    const result = await prisma.conversation.deleteMany({
       where: {
         id: conversationId,
         userId,
       },
     });
+
+    console.log(`✅ Deleted ${result.count} conversation(s)`);
+    return result;
   }
 
   /**
@@ -122,19 +158,28 @@ export class ChatService {
    * @param {string} title - New title
    */
   async updateTitle(conversationId, title) {
-    return await prisma.conversation.update({
+    console.log(`📝 Updating title for conversation ${conversationId} to "${title}"...`);
+
+    const conversation = await prisma.conversation.update({
       where: { id: conversationId },
       data: { title },
     });
+
+    console.log("✅ Conversation title updated");
+    return conversation;
   }
 
   /**
    * Helper to parse content (JSON or string)
    */
   parseContent(content) {
+    console.log("🔄 Parsing message content...");
     try {
-      return JSON.parse(content);
+      const parsed = JSON.parse(content);
+      console.log("✅ Content parsed as JSON");
+      return parsed;
     } catch {
+      console.log("ℹ️ Content is plain string");
       return content;
     }
   }
@@ -144,9 +189,14 @@ export class ChatService {
    * @param {Array} messages - Database messages
    */
   formatMessagesForAI(messages) {
-    return messages.map((msg) => ({
+    console.log(`🤖 Formatting ${messages.length} messages for AI SDK...`);
+
+    const formatted = messages.map((msg) => ({
       role: msg.role,
       content: typeof msg.content === "string" ? msg.content : JSON.stringify(msg.content),
     }));
+
+    console.log("✅ Messages formatted for AI SDK");
+    return formatted;
   }
 }

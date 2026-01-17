@@ -1,5 +1,9 @@
+console.log("🛠️ Loading Tool configuration...");
+
 import { google } from '@ai-sdk/google';
 import chalk from 'chalk';
+
+console.log("🔧 Defining available AI tools...");
 
 /**
  * Available Google Generative AI tools configuration
@@ -28,6 +32,9 @@ export const availableTools = [
     enabled: false,
   },
 ];
+
+console.log(`✅ Configured ${availableTools.length} AI tools`);
+console.log("🔧 Tools will be instantiated lazily to avoid initialization errors");
 
 /**
  * Get enabled tools as a tools object for AI SDK

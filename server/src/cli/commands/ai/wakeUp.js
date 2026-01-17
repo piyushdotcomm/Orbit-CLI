@@ -9,16 +9,22 @@ import { startToolChat } from "../../chat/chat-with-ai-tool.js";
 import { startAgentChat } from "../../chat/chat-with-ai-agent.js";
 
 const wakeUpAction = async () => {
+  console.log("🌅 Starting wake up process...");
+
+  console.log("🔑 Retrieving stored authentication token...");
   const token = await getStoredToken();
 
   if (!token?.access_token) {
-    console.log(chalk.red("Not authenticated. Please login."));
+    console.log(chalk.red("❌ Not authenticated. Please login."));
     return;
   }
+  console.log("✅ Authentication token found");
 
+  console.log("🔄 Starting spinner for user information fetch...");
   const spinner = yoctoSpinner({ text: "Fetching User Information..." });
   spinner.start();
 
+  console.log("👤 Querying database for user information...");
   const user = await prisma.user.findFirst({
     where: {
       sessions: {
@@ -34,13 +40,15 @@ const wakeUpAction = async () => {
   });
 
   spinner.stop();
+  console.log("✅ User information fetch completed");
 
   if (!user) {
-    console.log(chalk.red("User not found."));
+    console.log(chalk.red("❌ User not found."));
     return;
   }
 
   console.log(chalk.green(`\nWelcome back, ${user.name}!\n`));
+  console.log("📋 Presenting AI mode selection menu...");
 
   const choice = await select({
     message: "Select an option:",
@@ -65,13 +73,19 @@ const wakeUpAction = async () => {
 
   switch (choice) {
     case "chat":
+      console.log("💬 Starting simple chat mode...");
       await startChat("chat");
+      console.log("✅ Simple chat session ended");
       break;
     case "tool":
+      console.log("🛠️ Starting tool calling mode...");
       await startToolChat();
+      console.log("✅ Tool calling session ended");
       break;
     case "agent":
+      console.log("🤖 Starting agentic mode...");
       await startAgentChat();
+      console.log("✅ Agentic session ended");
       break;
   }
 };

@@ -1,9 +1,12 @@
+console.log("🤖 Loading Agent configuration...");
+
 import { promises as fs } from 'fs';
 import path from 'path';
 import chalk from 'chalk';
 import { generateObject } from 'ai';
 import { z } from 'zod';
 
+console.log("📋 Defining application schema for AI generation...");
 /**
  * Zod schema for structured application generation
  */
@@ -18,6 +21,8 @@ const ApplicationSchema = z.object({
   ).describe('All files needed for the application'),
   setupCommands: z.array(z.string()).describe('Bash commands to setup and run (e.g., npm install, npm run dev)'),
 });
+
+console.log("✅ Application schema defined");
 
 /**
  * Console logging helpers

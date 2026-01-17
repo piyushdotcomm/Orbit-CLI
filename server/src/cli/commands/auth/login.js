@@ -25,21 +25,27 @@ const TOKEN_FILE = path.join(CONFIG_DIR, "token.json");
 // ============================================
 
 export async function getStoredToken() {
+  console.log("🔑 Attempting to retrieve stored token...");
   try {
     const data = await fs.readFile(TOKEN_FILE, "utf-8");
     const token = JSON.parse(data);
+    console.log("✅ Token retrieved successfully");
     return token;
   } catch (error) {
-    // File doesn't exist or can't be read
+    console.log("⚠️ No stored token found or unable to read token file");
     return null;
   }
 }
 
 export async function storeToken(token) {
+  console.log("💾 Attempting to store authentication token...");
   try {
+    console.log("📁 Ensuring config directory exists...");
     // Ensure config directory exists
     await fs.mkdir(CONFIG_DIR, { recursive: true });
+    console.log("✅ Config directory ready");
 
+    console.log("📝 Preparing token data for storage...");
     // Store token with metadata
     const tokenData = {
       access_token: token.access_token,
@@ -52,27 +58,33 @@ export async function storeToken(token) {
       created_at: new Date().toISOString(),
     };
 
+    console.log("💾 Writing token to file...");
     await fs.writeFile(TOKEN_FILE, JSON.stringify(tokenData, null, 2), "utf-8");
+    console.log("✅ Token stored successfully");
     return true;
   } catch (error) {
-    console.error(chalk.red("Failed to store token:"), error.message);
+    console.error(chalk.red("❌ Failed to store token:"), error.message);
     return false;
   }
 }
 
 export async function clearStoredToken() {
+  console.log("🗑️ Attempting to clear stored token...");
   try {
     await fs.unlink(TOKEN_FILE);
+    console.log("✅ Token cleared successfully");
     return true;
   } catch (error) {
-    // File doesn't exist or can't be deleted
+    console.log("⚠️ Token file doesn't exist or couldn't be deleted");
     return false;
   }
 }
 
 export async function isTokenExpired() {
+  console.log("⏰ Checking if stored token is expired...");
   const token = await getStoredToken();
   if (!token || !token.expires_at) {
+    console.log("⚠️ No token or no expiration date found");
     return true;
   }
 
@@ -80,10 +92,13 @@ export async function isTokenExpired() {
   const now = new Date();
 
   // Consider expired if less than 5 minutes remaining
-  return expiresAt.getTime() - now.getTime() < 5 * 60 * 1000;
+  const isExpired = expiresAt.getTime() - now.getTime() < 5 * 60 * 1000;
+  console.log(`⏰ Token ${isExpired ? 'is expired' : 'is still valid'}`);
+  return isExpired;
 }
 
 export async function requireAuth() {
+  console.log("🔐 Checking authentication requirements...");
   const token = await getStoredToken();
 
   if (!token) {
@@ -101,6 +116,7 @@ export async function requireAuth() {
     process.exit(1);
   }
 
+  console.log("✅ Authentication check passed");
   return token;
 }
 
