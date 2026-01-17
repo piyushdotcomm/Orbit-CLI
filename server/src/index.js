@@ -4,66 +4,75 @@ import { fromNodeHeaders, toNodeHandler } from "better-auth/node";
 import cors from "cors";
 
 const app = express();
-const port = 3005;
+const port = process.env.PORT || 3005;
+
+const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:3000";
+
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://orbit-cli.vercel.app"
+];
 
 app.use(
   cors({
-    origin: "http://localhost:3000", 
-    methods: ["GET", "POST", "PUT", "DELETE"], 
-    credentials: true, 
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      return callback(new Error("Not allowed by CORS"));
+    },
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
   })
 );
 
-app.all("/api/auth/*splat", toNodeHandler(auth)); 
-
 app.use(express.json());
 
-// Fixed: This endpoint now properly handles Bearer token authentication
+app.all("/api/auth/*splat", toNodeHandler(auth));
+
 app.get("/api/me", async (req, res) => {
   try {
     const session = await auth.api.getSession({
       headers: fromNodeHeaders(req.headers),
     });
-    
+
     if (!session) {
       return res.status(401).json({ error: "No active session" });
     }
-    
+
     return res.json(session);
   } catch (error) {
     console.error("Session error:", error);
-    return res.status(500).json({ error: "Failed to get session", details: error.message });
+    return res.status(500).json({ error: "Failed to get session" });
   }
 });
 
-// You can remove this endpoint if you're using the Bearer token approach above
 app.get("/api/me/:access_token", async (req, res) => {
   const { access_token } = req.params;
-  console.log(access_token);
-  
+
   try {
     const session = await auth.api.getSession({
       headers: {
-        authorization: `Bearer ${access_token}`
-      }
+        authorization: `Bearer ${access_token}`,
+      },
     });
-    
+
     if (!session) {
       return res.status(401).json({ error: "Invalid token" });
     }
-    
+
     return res.json(session);
   } catch (error) {
-    console.error("Token validation error:", error);
-    return res.status(401).json({ error: "Unauthorized", details: error.message });
+    return res.status(401).json({ error: "Unauthorized" });
   }
 });
 
 app.get("/device", async (req, res) => {
-  const { user_code } = req.query; // Fixed: should be req.query, not req.params
-  res.redirect(`http://localhost:3000/device?user_code=${user_code}`);
+  const { user_code } = req.query;
+  res.redirect(`${CLIENT_URL}/device?user_code=${user_code}`);
 });
 
 app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`);
+  console.log(`Server running on port ${port}`);
 });
