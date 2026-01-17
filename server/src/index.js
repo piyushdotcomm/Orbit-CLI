@@ -1,7 +1,4 @@
-console.log(
-  "DEBUG DATABASE_URL:",
-  JSON.stringify(process.env.DATABASE_URL)
-);
+
 
 import express from "express";
 import { auth } from "./lib/auth.js";
@@ -13,22 +10,11 @@ const port = process.env.PORT || 3005;
 
 const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:3000";
 
-const allowedOrigins = [
-  "http://localhost:3000",
-  "https://orbit-cli.vercel.app"
-];
-
 app.use(
   cors({
-    origin: function (origin, callback) {
-      if (!origin) return callback(null, true);
-      if (allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      }
-      return callback(new Error("Not allowed by CORS"));
-    },
-    methods: ["GET", "POST", "PUT", "DELETE"],
+    origin: true,
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   })
 );
 
